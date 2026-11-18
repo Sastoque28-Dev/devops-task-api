@@ -1,0 +1,49 @@
+# Orquesta dos servicios: la API (app) y PostgreSQL (db).
+# Uso: cp .env.example .env && docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      # Volumen nombrado: los datos sobreviven a `docker compose down`.
+      - pgdata:/var/lib/postgresql/data
+      # Script de inicialización (solo corre con el volumen vacío).
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - backend
+    # Sin `ports`: la base de datos NO es accesible desde el host,
+    # solo desde otros contenedores de la red `backend`.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      target: runtime
+    restart: unless-stopped
+    environment:
+      DB_HOST: db            # el nombre del servicio actúa como hostname (DNS interno)
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy   # la app espera a que PostgreSQL esté lista
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:
