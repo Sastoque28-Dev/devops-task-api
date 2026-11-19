@@ -14,10 +14,9 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.platypus import Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-# ---- EDITA ESTOS DATOS ----
-AUTOR = "[Nombre del estudiante]"
-CURSO = "[Nombre del curso] · Actividad de aprendizaje 3"
-REPO_URL = "https://github.com/USUARIO/REPO"
+AUTOR = "Juan Sebastian Sastoque Vargas"
+CURSO = "Principios de Software · Actividad de aprendizaje 3"
+REPO_URL = "https://github.com/Sastoque28-Dev/devops-task-api"
 # ---------------------------
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
